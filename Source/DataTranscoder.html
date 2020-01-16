@@ -1,0 +1,210 @@
+<html>
+<body>
+
+<div id="divUI">
+
+	<label><b>Data Transcoder</b></label><br />
+
+	<label>Data to Encode:</label><br />
+	<textarea id="textareaDataToEncode" cols="40" rows="10"></textarea><br />
+
+	<label>From:</label>
+	<select id="selectEncodingFrom">
+		<option>Base64</option>
+		<option>Hexadecimal</option>
+		<option selected>UTF8</option>
+	</select>
+	<label>To:</label>
+	<select id="selectEncodingTo">
+		<option selected>Base64</option>
+		<option>Hexadecimal</option>
+		<option>UTF8</option>
+	</select><br />
+
+	<button onclick="buttonEncode_Clicked();">v Encode v</button>
+	<button onclick="buttonDecode_Clicked();">^ Decode ^</button><br />
+
+	<label>Data Encoded:</label><br />
+	<textarea id="textareaDataEncoded" cols="40" rows="10"></textarea><br />
+
+</div>
+
+<script type="text/javascript">
+
+// ui event handlers
+
+function buttonDecode_Clicked()
+{
+	var selectEncodingFrom = document.getElementById
+	(
+		"selectEncodingFrom"
+	);
+
+	var selectEncodingTo = document.getElementById
+	(
+		"selectEncodingTo"
+	);
+
+	var textareaDataToEncode = document.getElementById
+	(
+		"textareaDataToEncode"
+	);
+
+	var textareaDataEncoded = document.getElementById
+	(
+		"textareaDataEncoded"
+	);
+
+	var encodingNameFrom = selectEncodingFrom.value;
+	var encodingFrom = Encoding.Instances[encodingNameFrom];
+
+	var encodingNameTo = selectEncodingTo.value;
+	var encodingTo = Encoding.Instances[encodingNameTo];
+
+	var dataToEncode = textareaDataEncoded.value;
+	var dataAsBytes = encodingTo.decodeToBytes(dataToEncode);
+	var dataEncoded = encodingFrom.encodeBytes(dataAsBytes);
+
+	textareaDataToEncode.value = dataEncoded;
+}
+
+function buttonEncode_Clicked()
+{
+	var selectEncodingFrom = document.getElementById
+	(
+		"selectEncodingFrom"
+	);
+
+	var selectEncodingTo = document.getElementById
+	(
+		"selectEncodingTo"
+	);
+
+	var textareaDataToEncode = document.getElementById
+	(
+		"textareaDataToEncode"
+	);
+
+	var textareaDataEncoded = document.getElementById
+	(
+		"textareaDataEncoded"
+	);
+
+	var encodingNameFrom = selectEncodingFrom.value;
+	var encodingFrom = Encoding.Instances[encodingNameFrom];
+
+	var encodingNameTo = selectEncodingTo.value;
+	var encodingTo = Encoding.Instances[encodingNameTo];
+
+	var dataToEncode = textareaDataToEncode.value;
+	var dataAsBytes = encodingFrom.decodeToBytes(dataToEncode);
+	var dataEncoded = encodingTo.encodeBytes(dataAsBytes);
+
+	textareaDataEncoded.value = dataEncoded;
+}
+
+// classes
+
+function Encoding(name, decodeToBytes, encodeBytes)
+{
+	this.name = name;
+	this.decodeToBytes = decodeToBytes;
+	this.encodeBytes = encodeBytes;
+}
+{
+	Encoding.Instances = new Encoding_Instances();
+
+	function Encoding_Instances()
+	{
+		this.Base64 = new Encoding
+		(
+			"Base64",
+			function decodeToBytes(dataToDecode)
+			{
+				var dataAsBinaryString = atob(dataToDecode);
+				var dataAsBytes = [];
+				for (var i = 0; i < dataAsBinaryString.length; i++)
+				{
+					var byte = dataAsBinaryString.charCodeAt(i);
+					dataAsBytes.push(byte);
+				}
+				return dataAsBytes;
+			},
+			function encodeBytes(bytesToEncode)
+			{
+				var dataAsBinaryString = "";
+				for (var i = 0; i < bytesToEncode.length; i++)
+				{
+					var byte = bytesToEncode[i];
+					var byteAsChar = String.fromCharCode(byte);
+					dataAsBinaryString += byteAsChar;
+				}
+				var returnValue = btoa(dataAsBinaryString);
+				return returnValue;
+			}
+		);
+
+		this.Hexadecimal = new Encoding
+		(
+			"Hexadecimal",
+			function decodeToBytes(dataToDecode)
+			{
+				var returnValues = []
+				for (var i = 0; i < dataToDecode.length; i += 2)
+				{
+					var byteAsHexadecimal = dataToDecode.substr(i, 2);
+					var byte = parseInt(byteAsHexadecimal, 16);
+					returnValues.push(byte);
+				}
+				return returnValues;
+			},
+			function encodeBytes(bytesToEncode)
+			{
+				var returnValue = "";
+
+				for (var i = 0; i < bytesToEncode.length; i++)
+				{
+					var byte = bytesToEncode[i];
+					var byteAsString = byte.toString(16);
+					returnValue += byteAsString;
+				}
+
+				return returnValue;
+			}
+		);
+
+		this.UTF8 = new Encoding
+		(
+			"UTF8",
+			function decodeToBytes(dataToDecode)
+			{
+				var returnValues = []
+				for (var i = 0; i < dataToDecode.length; i++)
+				{
+					var byte = dataToDecode.charCodeAt(i);
+					returnValues.push(byte);
+				}
+				return returnValues;
+
+			},
+			function encodeBytes(bytesToEncode)
+			{
+				var returnValue = "";
+
+				for (var i = 0; i < bytesToEncode.length; i++)
+				{
+					var byte = bytesToEncode[i];
+					var char = String.fromCharCode(byte);
+					returnValue += char;
+				}
+				return returnValue;
+			}
+		);
+	}
+}
+
+</script>
+
+</body>
+</html>
+    
