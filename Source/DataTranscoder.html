@@ -35,31 +35,17 @@
 
 function buttonDecode_Clicked()
 {
-	var selectEncodingFrom = document.getElementById
-	(
-		"selectEncodingFrom"
-	);
-
-	var selectEncodingTo = document.getElementById
-	(
-		"selectEncodingTo"
-	);
-
-	var textareaDataToEncode = document.getElementById
-	(
-		"textareaDataToEncode"
-	);
-
-	var textareaDataEncoded = document.getElementById
-	(
-		"textareaDataEncoded"
-	);
+	var d = document;
+	var selectEncodingFrom = d.getElementById("selectEncodingFrom");
+	var selectEncodingTo = d.getElementById("selectEncodingTo");
+	var textareaDataToEncode = d.getElementById("textareaDataToEncode");
+	var textareaDataEncoded = d.getElementById("textareaDataEncoded");
 
 	var encodingNameFrom = selectEncodingFrom.value;
-	var encodingFrom = Encoding.Instances[encodingNameFrom];
+	var encodingFrom = Encoding.byName(encodingNameFrom);
 
 	var encodingNameTo = selectEncodingTo.value;
-	var encodingTo = Encoding.Instances[encodingNameTo];
+	var encodingTo = Encoding.byName(encodingNameTo);
 
 	var dataToEncode = textareaDataEncoded.value;
 	var dataAsBytes = encodingTo.decodeToBytes(dataToEncode);
@@ -70,31 +56,17 @@ function buttonDecode_Clicked()
 
 function buttonEncode_Clicked()
 {
-	var selectEncodingFrom = document.getElementById
-	(
-		"selectEncodingFrom"
-	);
-
-	var selectEncodingTo = document.getElementById
-	(
-		"selectEncodingTo"
-	);
-
-	var textareaDataToEncode = document.getElementById
-	(
-		"textareaDataToEncode"
-	);
-
-	var textareaDataEncoded = document.getElementById
-	(
-		"textareaDataEncoded"
-	);
+	var d = document;
+	var selectEncodingFrom = d.getElementById("selectEncodingFrom");
+	var selectEncodingTo = d.getElementById("selectEncodingTo");
+	var textareaDataToEncode = d.getElementById("textareaDataToEncode");
+	var textareaDataEncoded = d.getElementById("textareaDataEncoded");
 
 	var encodingNameFrom = selectEncodingFrom.value;
-	var encodingFrom = Encoding.Instances[encodingNameFrom];
+	var encodingFrom = Encoding.byName(encodingNameFrom);
 
 	var encodingNameTo = selectEncodingTo.value;
-	var encodingTo = Encoding.Instances[encodingNameTo];
+	var encodingTo = Encoding.byName(encodingNameTo);
 
 	var dataToEncode = textareaDataToEncode.value;
 	var dataAsBytes = encodingFrom.decodeToBytes(dataToEncode);
@@ -105,21 +77,38 @@ function buttonEncode_Clicked()
 
 // classes
 
-function Encoding(name, decodeToBytes, encodeBytes)
+class Encoding
 {
-	this.name = name;
-	this.decodeToBytes = decodeToBytes;
-	this.encodeBytes = encodeBytes;
-}
-{
-	Encoding.Instances = new Encoding_Instances();
+	constructor(name, decodeToBytes, encodeBytes)
+	{
+		this.name = name;
+		this.decodeToBytes = decodeToBytes;
+		this.encodeBytes = encodeBytes;
+	}
 
-	function Encoding_Instances()
+	static Instances()
+	{
+		if (Encoding._instances == null)
+		{
+			Encoding._instances = new Encoding_Instances();
+		}
+		return Encoding._instances;
+	}
+
+	static byName(name)
+	{
+		return Encoding.Instances().byName(name);
+	}
+}
+
+class Encoding_Instances
+{
+	constructor()
 	{
 		this.Base64 = new Encoding
 		(
 			"Base64",
-			function decodeToBytes(dataToDecode)
+			(dataToDecode) =>
 			{
 				var dataAsBinaryString = atob(dataToDecode);
 				var dataAsBytes = [];
@@ -130,7 +119,7 @@ function Encoding(name, decodeToBytes, encodeBytes)
 				}
 				return dataAsBytes;
 			},
-			function encodeBytes(bytesToEncode)
+			(bytesToEncode) =>
 			{
 				var dataAsBinaryString = "";
 				for (var i = 0; i < bytesToEncode.length; i++)
@@ -147,9 +136,17 @@ function Encoding(name, decodeToBytes, encodeBytes)
 		this.Hexadecimal = new Encoding
 		(
 			"Hexadecimal",
-			function decodeToBytes(dataToDecode)
+			(dataToDecode) =>
 			{
-				var returnValues = []
+				var returnValues = [];
+
+				var charsToRemoveAsString = " \t\r\n-_";
+				for (var i = 0; i < charsToRemoveAsString.length; i++)
+				{
+					var charToRemove = charsToRemoveAsString[i];
+					dataToDecode = dataToDecode.split(charToRemove).join("");
+				}
+
 				for (var i = 0; i < dataToDecode.length; i += 2)
 				{
 					var byteAsHexadecimal = dataToDecode.substr(i, 2);
@@ -158,7 +155,7 @@ function Encoding(name, decodeToBytes, encodeBytes)
 				}
 				return returnValues;
 			},
-			function encodeBytes(bytesToEncode)
+			(bytesToEncode) =>
 			{
 				var returnValue = "";
 
@@ -176,9 +173,9 @@ function Encoding(name, decodeToBytes, encodeBytes)
 		this.UTF8 = new Encoding
 		(
 			"UTF8",
-			function decodeToBytes(dataToDecode)
+			(dataToDecode) =>
 			{
-				var returnValues = []
+				var returnValues = [];
 				for (var i = 0; i < dataToDecode.length; i++)
 				{
 					var byte = dataToDecode.charCodeAt(i);
@@ -187,7 +184,7 @@ function Encoding(name, decodeToBytes, encodeBytes)
 				return returnValues;
 
 			},
-			function encodeBytes(bytesToEncode)
+			(bytesToEncode) =>
 			{
 				var returnValue = "";
 
@@ -200,6 +197,11 @@ function Encoding(name, decodeToBytes, encodeBytes)
 				return returnValue;
 			}
 		);
+	}
+
+	byName(name)
+	{
+		return this[name];
 	}
 }
 
