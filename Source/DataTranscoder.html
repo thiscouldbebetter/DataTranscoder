@@ -3,209 +3,46 @@
 
 <div id="divUI">
 
-	<label><b>Data Transcoder</b></label><br />
+	<h3>Data Transcoder</h3>
 
-	<label>Data to Encode:</label><br />
-	<textarea id="textareaDataToEncode" cols="40" rows="10"></textarea><br />
+	<p>
+		Enter data to transcode, source and target encodings, then click the button to transcode.
+	</p>
 
-	<label>From:</label>
-	<select id="selectEncodingFrom">
-		<option>Base64</option>
-		<option>Hexadecimal</option>
-		<option selected>UTF8</option>
-	</select>
-	<label>To:</label>
-	<select id="selectEncodingTo">
-		<option selected>Base64</option>
-		<option>Hexadecimal</option>
-		<option>UTF8</option>
-	</select><br />
+	<p>
+		<label>Data to Encode:</label><br />
+		<textarea id="textareaDataToEncode" cols="40" rows="10"></textarea>
+	</p>
 
-	<button onclick="buttonEncode_Clicked();">v Encode v</button>
-	<button onclick="buttonDecode_Clicked();">^ Decode ^</button><br />
+	<p>
+		<label>From:</label>
+		<select id="selectEncodingFrom">
+			<option>Base64</option>
+			<option>Hexadecimal</option>
+			<option selected>UTF8</option>
+		</select>
+		<label>To:</label>
+		<select id="selectEncodingTo">
+			<option selected>Base64</option>
+			<option>Hexadecimal</option>
+			<option>UTF8</option>
+		</select>
+	</p>
 
-	<label>Data Encoded:</label><br />
-	<textarea id="textareaDataEncoded" cols="40" rows="10"></textarea><br />
+	<p>
+		<button onclick="UiEventHandler.buttonEncode_Clicked();">v Encode v</button>
+		<button onclick="UiEventHandler.buttonDecode_Clicked();">^ Decode ^</button>
+	</p>
+
+	<p>
+		<label>Data Encoded:</label><br />
+		<textarea id="textareaDataEncoded" cols="40" rows="10"></textarea>
+	</p>
 
 </div>
 
-<script type="text/javascript">
-
-// ui event handlers
-
-function buttonDecode_Clicked()
-{
-	var d = document;
-	var selectEncodingFrom = d.getElementById("selectEncodingFrom");
-	var selectEncodingTo = d.getElementById("selectEncodingTo");
-	var textareaDataToEncode = d.getElementById("textareaDataToEncode");
-	var textareaDataEncoded = d.getElementById("textareaDataEncoded");
-
-	var encodingNameFrom = selectEncodingFrom.value;
-	var encodingFrom = Encoding.byName(encodingNameFrom);
-
-	var encodingNameTo = selectEncodingTo.value;
-	var encodingTo = Encoding.byName(encodingNameTo);
-
-	var dataToEncode = textareaDataEncoded.value;
-	var dataAsBytes = encodingTo.decodeToBytes(dataToEncode);
-	var dataEncoded = encodingFrom.encodeBytes(dataAsBytes);
-
-	textareaDataToEncode.value = dataEncoded;
-}
-
-function buttonEncode_Clicked()
-{
-	var d = document;
-	var selectEncodingFrom = d.getElementById("selectEncodingFrom");
-	var selectEncodingTo = d.getElementById("selectEncodingTo");
-	var textareaDataToEncode = d.getElementById("textareaDataToEncode");
-	var textareaDataEncoded = d.getElementById("textareaDataEncoded");
-
-	var encodingNameFrom = selectEncodingFrom.value;
-	var encodingFrom = Encoding.byName(encodingNameFrom);
-
-	var encodingNameTo = selectEncodingTo.value;
-	var encodingTo = Encoding.byName(encodingNameTo);
-
-	var dataToEncode = textareaDataToEncode.value;
-	var dataAsBytes = encodingFrom.decodeToBytes(dataToEncode);
-	var dataEncoded = encodingTo.encodeBytes(dataAsBytes);
-
-	textareaDataEncoded.value = dataEncoded;
-}
-
-// classes
-
-class Encoding
-{
-	constructor(name, decodeToBytes, encodeBytes)
-	{
-		this.name = name;
-		this.decodeToBytes = decodeToBytes;
-		this.encodeBytes = encodeBytes;
-	}
-
-	static Instances()
-	{
-		if (Encoding._instances == null)
-		{
-			Encoding._instances = new Encoding_Instances();
-		}
-		return Encoding._instances;
-	}
-
-	static byName(name)
-	{
-		return Encoding.Instances().byName(name);
-	}
-}
-
-class Encoding_Instances
-{
-	constructor()
-	{
-		this.Base64 = new Encoding
-		(
-			"Base64",
-			(dataToDecode) =>
-			{
-				var dataAsBinaryString = atob(dataToDecode);
-				var dataAsBytes = [];
-				for (var i = 0; i < dataAsBinaryString.length; i++)
-				{
-					var byte = dataAsBinaryString.charCodeAt(i);
-					dataAsBytes.push(byte);
-				}
-				return dataAsBytes;
-			},
-			(bytesToEncode) =>
-			{
-				var dataAsBinaryString = "";
-				for (var i = 0; i < bytesToEncode.length; i++)
-				{
-					var byte = bytesToEncode[i];
-					var byteAsChar = String.fromCharCode(byte);
-					dataAsBinaryString += byteAsChar;
-				}
-				var returnValue = btoa(dataAsBinaryString);
-				return returnValue;
-			}
-		);
-
-		this.Hexadecimal = new Encoding
-		(
-			"Hexadecimal",
-			(dataToDecode) =>
-			{
-				var returnValues = [];
-
-				var charsToRemoveAsString = " \t\r\n-_";
-				for (var i = 0; i < charsToRemoveAsString.length; i++)
-				{
-					var charToRemove = charsToRemoveAsString[i];
-					dataToDecode = dataToDecode.split(charToRemove).join("");
-				}
-
-				for (var i = 0; i < dataToDecode.length; i += 2)
-				{
-					var byteAsHexadecimal = dataToDecode.substr(i, 2);
-					var byte = parseInt(byteAsHexadecimal, 16);
-					returnValues.push(byte);
-				}
-				return returnValues;
-			},
-			(bytesToEncode) =>
-			{
-				var returnValue = "";
-
-				for (var i = 0; i < bytesToEncode.length; i++)
-				{
-					var byte = bytesToEncode[i];
-					var byteAsString = byte.toString(16);
-					returnValue += byteAsString;
-				}
-
-				return returnValue;
-			}
-		);
-
-		this.UTF8 = new Encoding
-		(
-			"UTF8",
-			(dataToDecode) =>
-			{
-				var returnValues = [];
-				for (var i = 0; i < dataToDecode.length; i++)
-				{
-					var byte = dataToDecode.charCodeAt(i);
-					returnValues.push(byte);
-				}
-				return returnValues;
-
-			},
-			(bytesToEncode) =>
-			{
-				var returnValue = "";
-
-				for (var i = 0; i < bytesToEncode.length; i++)
-				{
-					var byte = bytesToEncode[i];
-					var char = String.fromCharCode(byte);
-					returnValue += char;
-				}
-				return returnValue;
-			}
-		);
-	}
-
-	byName(name)
-	{
-		return this[name];
-	}
-}
-
-</script>
+<script type="text/javascript" src="Encoding.js"></script>
+<script type="text/javascript" src="UiEventHandler.js"></script>
 
 </body>
 </html>
