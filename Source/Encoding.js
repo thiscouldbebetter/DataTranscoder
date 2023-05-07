@@ -55,6 +55,39 @@ class Encoding_Instances
 			}
 		);
 
+		this.Binary = new Encoding
+		(
+			"Binary",
+			(dataToDecode) =>
+			{
+				var dataAsBytes = [];
+				var octetOfBitsCurrent = "";
+
+				var bitsPerByte = 8;
+				for (var i = 0; i < dataToDecode.length; i++)
+				{
+					var bitCurrentAsChar = dataToDecode[i];
+
+					octetOfBitsCurrent += bitCurrentAsChar;
+
+					if ((i + 1) % bitsPerByte == 0)
+					{
+						var byteCurrent = parseInt(octetOfBitsCurrent, 2);
+						dataAsBytes.push(byteCurrent);
+						octetOfBitsCurrent = "";
+					}
+				}
+
+				return dataAsBytes;
+			},
+			(bytesToEncode) =>
+			{
+				var bytesAsBitStrings = bytesToEncode.map(x => x.toString(2) );
+				var dataAsString = bytesAsBitStrings.join(" ");
+				return dataAsString;
+			}
+		);
+
 		this.Hexadecimal = new Encoding
 		(
 			"Hexadecimal",
